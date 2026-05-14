@@ -1,0 +1,14 @@
+# Python
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+
+# Node
+frontend/floriere-app/node_modules/
+
+# Environment
+.env
+*.env
+
+# macOS
+.DS_Store
