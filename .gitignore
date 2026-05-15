@@ -1,14 +1,43 @@
 # Python
 backend/venv/
 backend/__pycache__/
+backend/**/__pycache__/
 backend/*.pyc
+backend/**/*.pyc
+backend/.pytest_cache/
+backend/instance/
 
-# Node
+# Node / Expo
 frontend/floriere-app/node_modules/
+frontend/floriere-app/.expo/
+frontend/floriere-app/.expo-shared/
+frontend/floriere-app/dist/
+frontend/floriere-app/web-build/
 
 # Environment
 .env
+.env.local
+.env.production
 *.env
 
 # macOS
 .DS_Store
+
+# Windows
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Friend's stray dev files
+backend/cookies.txt
+backend/body.json
+backend/order.json
+backend/status.json

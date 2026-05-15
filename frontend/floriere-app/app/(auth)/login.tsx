@@ -1,65 +1,112 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+// Login — full-viewport split. Desktop: hero LEFT, form RIGHT.
+// Mobile: form only (no hero — keeps the form focused on small screens).
+
 import { useRouter } from 'expo-router';
-import { API_URL } from '../../constants/api';
-import { saveSession } from '../../constants/session';
+import { useState } from 'react';
+import { ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { BrandMark } from '../../components/BrandMark';
+import { Button } from '../../components/Button';
+import { Field } from '../../components/Field';
+import { PlaceholderImage } from '../../components/PlaceholderImage';
+import { Text } from '../../components/Text';
+import { useAuth } from '../../lib/auth-context';
+import { ApiError } from '../../lib/api';
+import { space } from '../../theme';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn } = useAuth();
+
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
 
   async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+    setError(null);
+    if (!email.trim() || !password) {
+      setError('Email and password are required.');
       return;
     }
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email, password }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        Alert.alert('Error', data.error);
-        return;
-      }
-      await saveSession(data.user_id, data.name);
-      router.replace('/(tabs)/home');
-    } catch {
-      Alert.alert('Error', 'Could not connect to server');
+      await signIn(email.trim(), password);
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : 'Could not connect to Florière.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Florière</Text>
-      <Text style={styles.subtitle}>Every bloom, intended.</Text>
-      <TextInput style={styles.input} placeholder="Email" value={email}
-        onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-      <TextInput style={styles.input} placeholder="Password" value={password}
-        onChangeText={setPassword} secureTextEntry />
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Log in</Text>}
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-        <Text style={styles.link}>Don't have an account? Register</Text>
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-cream">
+      <View className="flex-1 flex-col lg:flex-row">
+
+        {/* Left: TODO photo slot (desktop only) */}
+        <View className="hidden lg:flex lg:flex-1 lg:min-h-screen relative">
+          <PlaceholderImage size="lg" fill />
+        </View>
+
+        {/* Right: form */}
+        <ScrollView
+          className="flex-1 bg-cream"
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-1 px-xl lg:px-huge py-xxxl lg:py-huge justify-center items-center lg:items-start">
+            <View className="w-full max-w-[420px]">
+              <View className="items-center lg:items-start mb-xxl">
+                <BrandMark size="md" />
+                <Text variant="quote" color="muted" align="center" style={{ marginTop: space.sm }}>
+                  Sign in to send something true.
+                </Text>
+              </View>
+
+              <Field
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder="you@email.com"
+              />
+              <Field
+                label="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholder="At least 6 characters"
+                error={error}
+              />
+              <Button label={loading ? 'Signing in…' : 'Sign in'} onPress={handleLogin} loading={loading} full />
+              <View style={{ height: space.md }} />
+              <Button
+                label="Create an account"
+                variant="secondary"
+                full
+                onPress={() => router.push('/(auth)/register')}
+              />
+              <View style={{ height: space.lg }} />
+              <Text variant="caption" color="muted" align="center" onPress={() => router.push('/')}>
+                ← Back to home
+              </Text>
+
+              <View className="mt-xxxl pt-lg border-t border-creamRule items-center lg:items-start">
+                <Text variant="eyebrow" color="champagne">DEMO ACCOUNTS</Text>
+                <Text variant="caption" color="muted" style={{ marginTop: 4 }}>
+                  pete@floriere.test · purchaser123{'\n'}
+                  merchant@floriere.test · merchant123{'\n'}
+                  admin@floriere.test · admin123
+                </Text>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container:  { flex: 1, justifyContent: 'center', padding: 32, backgroundColor: '#FAF7F2' },
-  title:      { fontSize: 36, fontWeight: '300', textAlign: 'center', color: '#2C2C2C', letterSpacing: 4 },
-  subtitle:   { fontSize: 13, textAlign: 'center', color: '#9A8C7E', marginBottom: 48, letterSpacing: 1 },
-  input:      { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8E0D8', borderRadius: 8, padding: 14, marginBottom: 12, fontSize: 15 },
-  button:     { backgroundColor: '#B8954A', borderRadius: 8, padding: 16, alignItems: 'center', marginTop: 8 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '500' },
-  link:       { textAlign: 'center', marginTop: 20, color: '#9A8C7E', fontSize: 13 },
-});
