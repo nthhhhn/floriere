@@ -71,7 +71,7 @@ export default function OrdersIndex() {
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/account">
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
       <AppHeader eyebrow="YOUR ORDERS" title="Your purchases" />
 
       <View style={styles.tabStrip}>

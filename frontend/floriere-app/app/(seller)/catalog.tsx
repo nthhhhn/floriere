@@ -69,12 +69,16 @@ export default function SellerCatalog() {
     }
   }
 
-  async function remove(id: number) {
+  async function toggleActive(id: number, active: boolean) {
     try {
-      await apiDelete(`/seller/flowers/${id}`);
+      if (active) {
+        await apiPatch(`/seller/flowers/${id}`, { active: 1 });
+      } else {
+        await apiDelete(`/seller/flowers/${id}`);
+      }
       await load();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Could not remove.');
+      setError(err instanceof ApiError ? err.message : 'Could not update status.');
     }
   }
 
@@ -91,7 +95,7 @@ export default function SellerCatalog() {
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet" back>
+    <Screen background="cream" maxFrame="tablet" back="/(seller)/home" backLabel="Back">
       <AppHeader eyebrow="CATALOG" title="Manage your stems" />
 
       <Card tone="creamSoft" style={{ width: '100%', marginBottom: space.xl }}>
@@ -153,7 +157,11 @@ export default function SellerCatalog() {
               </View>
               <View style={{ alignItems: 'flex-end', gap: space.xs }}>
                 <Pressable onPress={() => edit(f)}><Text variant="caption" color="champagne">Edit</Text></Pressable>
-                <Pressable onPress={() => remove(f.id)}><Text variant="caption" color="danger">Disable</Text></Pressable>
+                {f.active ? (
+                  <Pressable onPress={() => toggleActive(f.id, false)}><Text variant="caption" color="danger">Disable</Text></Pressable>
+                ) : (
+                  <Pressable onPress={() => toggleActive(f.id, true)}><Text variant="caption" color="success">Enable</Text></Pressable>
+                )}
               </View>
             </View>
           </Card>

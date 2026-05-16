@@ -118,6 +118,19 @@ export default function Concierge() {
           setMessage(b.message || '');
           setFormat(b.format || 'card');
           setAnythingElse(b.anything_else || '');
+          setResult({
+            preview_url: b.preview_url,
+            preview_source: b.preview_source || 'dalle3',
+            label: b.label,
+            summary: b.summary,
+            price_thb: b.price_thb,
+            best_mood_id: b.best_mood_id || '',
+            tags: b.tags || { palette: [], vibe: [], shape: [] },
+            suggested_curated: null,
+            message: b.message || '',
+            format: (b.format as FormatId) || 'card',
+            format_label: b.format === 'letter' ? 'Letter' : 'Card',
+          });
           setStep(7);
         }
       }).catch(console.error);
@@ -848,7 +861,7 @@ export default function Concierge() {
 
               <View style={{ height: space.md }} />
               <Button
-                label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm changes' : `Add to cart · ${thb(result.price_thb)}`)}
+                label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm edit' : `Add to cart · ${thb(result.price_thb)}`)}
                 onPress={addToCart}
                 loading={adding}
                 full

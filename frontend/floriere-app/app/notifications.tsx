@@ -93,11 +93,10 @@ export default function NotificationsScreen() {
   const unreadCount = list?.filter((n) => !n.read_at).length ?? 0;
 
   return (
-    <Screen background="cream" maxFrame="tablet">
+    <Screen background="cream" maxFrame="tablet" back backLabel="Back">
       <AppHeader
         eyebrow="ACTIVITY"
         title="Your order updates"
-        back
         showBell={false}
         rightSlot={
           unreadCount > 0 ? (

@@ -210,7 +210,7 @@ export default function OrderDetail() {
 
   if (!order) {
     return (
-      <Screen background="cream" maxFrame="tablet" back>
+      <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
         <AppHeader eyebrow="ORDER" title="Loading" />
         <ActivityIndicator color={colors.champagne} />
       </Screen>
@@ -237,7 +237,7 @@ export default function OrderDetail() {
     : Math.max(0, Math.min(1, currentStep / totalStages));
 
   return (
-    <Screen background="cream" maxFrame="tablet" back>
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
       <AppHeader eyebrow={`ORDER #${order.id}`} title={`For ${order.recipient_name}`} />
 
       {/* 1 · Status hero — single source of truth. Replaces old hero + 5-dot tracker. */}

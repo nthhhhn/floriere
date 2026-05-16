@@ -72,16 +72,16 @@ export default function CartScreen() {
 
   function editItem(it: CartItem) {
     if (it.item_type === 'curated' && it.curated_bouquet_id) {
-      router.push(`/(purchaser)/curated/${it.curated_bouquet_id}` as any);
+      router.push(`/(purchaser)/curated/${it.curated_bouquet_id}?edit_item_id=${it.id}` as any);
     } else if (it.item_type === 'intent' || it.item_type === 'custom') {
-      router.push('/(purchaser)/intent' as any);
+      router.push(`/(purchaser)/intent?edit_item_id=${it.id}` as any);
     } else if (it.item_type === 'concierge') {
-      router.push('/(purchaser)/compose' as any);
+      router.push(`/(purchaser)/compose?edit_item_id=${it.id}` as any);
     }
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet">
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
       <Modal
         visible={itemToRemove !== null}
         transparent

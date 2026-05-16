@@ -71,7 +71,7 @@ export default function IntentMode() {
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet" back>
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
       <AppHeader eyebrow="INTENT MODE" title="Tell us the moment" />
 
       <Text variant="bodySm" color="muted" style={styles.intro}>
@@ -177,7 +177,7 @@ export default function IntentMode() {
 
           <View style={{ height: space.md }} />
           <Button
-            label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm changes' : `Add to cart · ${thb(suggestion.suggested_bouquet.base_price_thb)}`)}
+            label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm edit' : `Add to cart · ${thb(suggestion.suggested_bouquet.base_price_thb)}`)}
             onPress={addToCart}
             loading={adding}
             full

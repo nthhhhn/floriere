@@ -54,7 +54,7 @@ export default function Favorites() {
   const cardWidth = bp === 'phone' ? '48%' : '31%';
 
   return (
-    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home">
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
       <AppHeader eyebrow="FAVORITES" title="Saved bouquets" />
 
       {list === null ? (

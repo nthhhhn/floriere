@@ -95,7 +95,7 @@ export default function CuratedDetail() {
 
   if (loading) {
     return (
-      <Screen background="cream" maxFrame="tablet">
+      <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
         <AppHeader eyebrow="CURATED" title="Loading" />
         <ActivityIndicator color={colors.champagne} />
       </Screen>
@@ -104,7 +104,7 @@ export default function CuratedDetail() {
 
   if (!bouquet) {
     return (
-      <Screen background="cream" maxFrame="tablet">
+      <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
         <AppHeader eyebrow="CURATED" title="Not found" />
         <View className="w-full items-center py-huge">
           <Text className="font-serif text-h2 text-ink text-center">This bouquet isn't available</Text>
@@ -121,7 +121,7 @@ export default function CuratedDetail() {
   const wideLead = bp !== 'phone';
 
   return (
-    <Screen background="cream" maxFrame="tablet">
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home" backLabel="Back">
       <AppHeader
         eyebrow={occasionLabel(bouquet.occasion).toUpperCase()}
         title={bouquet.name}
@@ -174,7 +174,7 @@ export default function CuratedDetail() {
           ) : null}
 
           <View style={{ height: 16 }} />
-          <Button label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm changes' : 'Add to cart')} onPress={addToCart} loading={adding} full />
+          <Button label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm edit' : 'Add to cart')} onPress={addToCart} loading={adding} full />
         </View>
       </View>
 
