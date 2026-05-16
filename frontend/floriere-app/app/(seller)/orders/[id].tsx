@@ -57,6 +57,17 @@ export default function SellerOrderDetail() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    if (!id) return;
+    const h = setInterval(async () => {
+      try {
+        const msgs = await apiGet<OrderMessage[]>(`/orders/${id}/messages`);
+        setMessages(msgs);
+      } catch { /* ignore */ }
+    }, 5000);
+    return () => clearInterval(h);
+  }, [id]);
+
   async function setStatus(s: OrderStatus) {
     if (!order) return;
     setError(null); setBusy(true);
@@ -134,8 +145,8 @@ export default function SellerOrderDetail() {
 
   if (!order) {
     return (
-      <Screen background="cream" maxFrame="tablet">
-        <AppHeader eyebrow="ORDER" title="Loading" back />
+      <Screen background="cream" maxFrame="tablet" back>
+        <AppHeader eyebrow="ORDER" title="Loading" />
         <ActivityIndicator color={colors.champagne} />
       </Screen>
     );
@@ -148,8 +159,8 @@ export default function SellerOrderDetail() {
   const isReviewing = brief && (order.status === 'pending_review' || order.status === 'awaiting_customer');
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow={`ORDER #${order.id}`} title={`For ${order.recipient_name}`} back />
+    <Screen background="cream" maxFrame="tablet" back>
+      <AppHeader eyebrow={`ORDER #${order.id}`} title={`For ${order.recipient_name}`} />
 
       <View style={{ width: '100%' }}>
         <View style={styles.headRow}>

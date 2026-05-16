@@ -91,8 +91,8 @@ export default function SellerCatalog() {
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow="CATALOG" title="Manage your stems" back />
+    <Screen background="cream" maxFrame="tablet" back>
+      <AppHeader eyebrow="CATALOG" title="Manage your stems" />
 
       <Card tone="creamSoft" style={{ width: '100%', marginBottom: space.xl }}>
         <Text variant="eyebrow" color="champagne">

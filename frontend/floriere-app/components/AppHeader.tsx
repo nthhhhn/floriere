@@ -13,7 +13,6 @@ type Props = {
   showLogout?: boolean;
   showBell?: boolean;
   rightSlot?: React.ReactNode;
-  back?: boolean;
 };
 
 export function AppHeader({
@@ -22,7 +21,6 @@ export function AppHeader({
   showLogout = true,
   showBell   = true,
   rightSlot,
-  back,
 }: Props) {
   const router = useRouter();
   const { user, signOut } = useAuth();
@@ -31,21 +29,6 @@ export function AppHeader({
   return (
     <View style={styles.row}>
       <View style={styles.left}>
-        {back ? (
-          <Animated.View style={{ alignSelf: 'flex-start', transform: [{ scale: backPress.scale }] }}>
-            <Pressable
-              onPress={() => router.back()}
-              onPressIn={backPress.onPressIn}
-              onPressOut={backPress.onPressOut}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-              hitSlop={8}
-              style={styles.back}
-            >
-              <Text variant="bodySm" color="champagne" style={{ fontWeight: '600' }}>← Back</Text>
-            </Pressable>
-          </Animated.View>
-        ) : null}
         {eyebrow ? <Text variant="eyebrow" color="champagne">{eyebrow}</Text> : null}
         {title ? <Text variant="h2" color="ink" style={{ marginTop: 4 }}>{title}</Text> : null}
         {user ? (

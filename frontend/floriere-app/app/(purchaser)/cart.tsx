@@ -2,9 +2,9 @@
 // Each row: thumbnail + title + meta + qty/price + remove.
 // Sticky-feeling subtotal card at bottom with checkout CTA.
 
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppHeader } from '../../components/AppHeader';
 import { Button } from '../../components/Button';
@@ -16,7 +16,7 @@ import { Text } from '../../components/Text';
 import { apiDelete, apiGet, ApiError } from '../../lib/api';
 import type { Cart as CartType, CartItem } from '../../lib/types';
 import { occasionLabel, thb } from '../../lib/format';
-import { colors, radii, space } from '../../theme';
+import { colors, radii, space, shadow } from '../../theme';
 
 function thumbToneFor(it: CartItem): Parameters<typeof PlaceholderImage>[0]['tone'] {
   const first = it.flowers?.[0];
@@ -38,6 +38,7 @@ export default function CartScreen() {
   const [cart, setCart] = useState<CartType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
 
   const reload = useCallback(async () => {
     try {
@@ -50,7 +51,11 @@ export default function CartScreen() {
     }
   }, []);
 
-  useEffect(() => { reload(); }, [reload]);
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload])
+  );
 
   async function doRemove(id: number) {
     try {
@@ -62,24 +67,58 @@ export default function CartScreen() {
   }
 
   function confirmRemove(it: CartItem) {
-    const title = titleFor(it);
-    // Concierge briefs cost the user 7 quiz steps — extra caution there.
-    const msg = it.item_type === 'concierge'
-      ? `Remove "${title}"? You'll lose the brief and have to redo the concierge quiz.`
-      : `Remove "${title}" from your cart?`;
-    if (Platform.OS === 'web') {
-      if (typeof window !== 'undefined' && window.confirm(msg)) doRemove(it.id);
-      return;
+    setItemToRemove(it);
+  }
+
+  function editItem(it: CartItem) {
+    if (it.item_type === 'curated' && it.curated_bouquet_id) {
+      router.push(`/(purchaser)/curated/${it.curated_bouquet_id}` as any);
+    } else if (it.item_type === 'intent' || it.item_type === 'custom') {
+      router.push('/(purchaser)/intent' as any);
+    } else if (it.item_type === 'concierge') {
+      router.push('/(purchaser)/compose' as any);
     }
-    Alert.alert('Remove item', msg, [
-      { text: 'Keep', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => doRemove(it.id) },
-    ]);
   }
 
   return (
     <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow="YOUR CART" title="Almost there." back />
+      <Modal
+        visible={itemToRemove !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setItemToRemove(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text variant="h3" color="ink" style={{ marginBottom: space.sm }}>Remove item?</Text>
+            <Text variant="body" color="muted" style={{ marginBottom: space.lg }}>
+              {itemToRemove ? (
+                itemToRemove.item_type === 'concierge'
+                  ? `Remove "${titleFor(itemToRemove)}"? You'll lose the brief and have to redo the concierge quiz.`
+                  : `Remove "${titleFor(itemToRemove)}" from your cart?`
+              ) : ''}
+            </Text>
+            <View style={styles.modalActions}>
+              <View style={{ flex: 1 }}>
+                <Button label="No" variant="secondary" onPress={() => setItemToRemove(null)} full />
+              </View>
+              <View style={{ width: space.md }} />
+              <View style={{ flex: 1 }}>
+                <Button 
+                  label="Yes" 
+                  onPress={() => {
+                    if (itemToRemove) doRemove(itemToRemove.id);
+                    setItemToRemove(null);
+                  }} 
+                  full 
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <AppHeader eyebrow="YOUR CART" title="Almost there." />
 
       {loading ? (
         <ActivityIndicator color={colors.champagne} />
@@ -106,14 +145,22 @@ export default function CartScreen() {
                     label={it.item_type.toUpperCase()}
                     tone={it.item_type === 'curated' ? 'champagne' : it.item_type === 'intent' ? 'plum' : 'ink'}
                   />
-                  <Pressable
-                    onPress={() => confirmRemove(it)}
-                    hitSlop={12}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove ${titleFor(it)} from cart`}
-                  >
-                    <Text variant="caption" color="danger" style={{ fontWeight: '600' }}>Remove</Text>
-                  </Pressable>
+                  <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'center' }}>
+                    <Pressable
+                      onPress={() => editItem(it)}
+                      hitSlop={12}
+                    >
+                      <Text variant="caption" color="champagne" style={{ fontWeight: '600' }}>Edit order</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => confirmRemove(it)}
+                      hitSlop={12}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove ${titleFor(it)} from cart`}
+                    >
+                      <Text variant="caption" color="danger" style={{ fontWeight: '600' }}>Remove</Text>
+                    </Pressable>
+                  </View>
                 </View>
                 <Text variant="body" color="ink" style={{ fontWeight: '600', marginTop: 4 }} numberOfLines={1}>
                   {titleFor(it)}
@@ -192,4 +239,23 @@ const styles = StyleSheet.create({
     marginTop: space.sm,
   },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space.sm },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: space.xl,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    padding: space.xl,
+    ...shadow.card,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
 });

@@ -1,10 +1,12 @@
 import { type ReactNode } from 'react';
 import { Animated, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
 import { useBreakpoint, pickByBreakpoint } from '../lib/responsive';
 import { colors, space, useFadeIn, widths } from '../theme';
 import { Gradient } from './Gradient';
+import { Button } from './Button';
 
 type Background =
   | 'cream'
@@ -27,6 +29,7 @@ type Props = {
   contentStyle?: ViewStyle;
   /** Disable the mount fade-in. Default: enabled. */
   noAnimation?: boolean;
+  back?: boolean | string | (() => void);
 };
 
 const GRADIENT_BACKGROUNDS: Background[] = ['page-gradient', 'hero-gradient', 'dark-gradient'];
@@ -46,7 +49,9 @@ export function Screen({
   edges = ['top', 'bottom'],
   contentStyle,
   noAnimation = false,
+  back,
 }: Props) {
+  const router = useRouter();
   const bp = useBreakpoint();
   const maxWidth = pickByBreakpoint(bp, {
     phone:  undefined as number | undefined,
@@ -79,6 +84,16 @@ export function Screen({
       ] as any}
     >
       {children}
+      {back ? (
+        <View style={{ marginTop: space.xl, width: '100%' }}>
+          <Button 
+            label="Remove" 
+            variant="secondary"
+            onPress={() => typeof back === 'function' ? back() : typeof back === 'string' ? router.push(back as any) : router.back()}
+            full 
+          />
+        </View>
+      ) : null}
     </AnimatedView>
   );
 

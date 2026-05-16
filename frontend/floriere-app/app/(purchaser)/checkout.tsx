@@ -179,8 +179,8 @@ export default function Checkout() {
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow="CHECKOUT" title="Delivery details" back />
+    <Screen background="cream" maxFrame="tablet" back>
+      <AppHeader eyebrow="CHECKOUT" title="Delivery details" />
 
       {/* Cart summary row */}
       {cart && cart.items.length > 0 ? (

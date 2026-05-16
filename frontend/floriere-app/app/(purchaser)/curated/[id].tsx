@@ -1,6 +1,6 @@
 // Curated detail — NativeWind migration target. Tailwind classNames cover
 // layout / spacing / typography on plain <View> + RN <Text>. Our shared
-// component primitives (<Card>, <Pill>, <Button>, <Screen>, <AppHeader>,
+// component primitives (<Card>, <Pill>, <Button>, <Screen back>, <AppHeader>,
 // <Stars>) still consume the StyleSheet theme.
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -26,7 +26,7 @@ const EYEBROW_CLASS =
 export default function CuratedDetail() {
   const router = useRouter();
   const bp = useBreakpoint();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, edit_item_id } = useLocalSearchParams<{ id: string; edit_item_id?: string }>();
 
   const [bouquet, setBouquet] = useState<CuratedBouquet | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +65,9 @@ export default function CuratedDetail() {
     setError(null);
     setAdding(true);
     try {
+      if (edit_item_id) {
+        await apiDelete(`/cart/items/${edit_item_id}`);
+      }
       await apiPost<Cart>('/cart/items', {
         item_type: 'curated',
         curated_bouquet_id: bouquet.id,
@@ -92,8 +95,8 @@ export default function CuratedDetail() {
 
   if (loading) {
     return (
-      <Screen background="cream" maxFrame="tablet">
-        <AppHeader eyebrow="CURATED" title="Loading" back />
+      <Screen background="cream" maxFrame="tablet" back>
+        <AppHeader eyebrow="CURATED" title="Loading" />
         <ActivityIndicator color={colors.champagne} />
       </Screen>
     );
@@ -101,8 +104,8 @@ export default function CuratedDetail() {
 
   if (!bouquet) {
     return (
-      <Screen background="cream" maxFrame="tablet">
-        <AppHeader eyebrow="CURATED" title="Not found" back />
+      <Screen background="cream" maxFrame="tablet" back>
+        <AppHeader eyebrow="CURATED" title="Not found" />
         <View className="w-full items-center py-huge">
           <Text className="font-serif text-h2 text-ink text-center">This bouquet isn't available</Text>
           <Text className="font-sans text-body text-muted text-center mt-sm" style={{ maxWidth: 320 }}>
@@ -118,7 +121,7 @@ export default function CuratedDetail() {
   const wideLead = bp !== 'phone';
 
   return (
-    <Screen background="cream" maxFrame="tablet">
+    <Screen background="cream" maxFrame="tablet" back>
       <AppHeader
         eyebrow={occasionLabel(bouquet.occasion).toUpperCase()}
         title={bouquet.name}
@@ -172,7 +175,7 @@ export default function CuratedDetail() {
           ) : null}
 
           <View style={{ height: 16 }} />
-          <Button label={adding ? 'Adding to cart…' : 'Add to cart'} onPress={addToCart} loading={adding} full />
+          <Button label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm changes' : 'Add to cart')} onPress={addToCart} loading={adding} full />
         </View>
       </View>
 

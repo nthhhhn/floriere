@@ -3,7 +3,7 @@
 // recipient + message fields, Suggest CTA, then a hero result card with
 // real photo + suggested card message.
 
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { PlaceholderImage } from '../../components/PlaceholderImage';
@@ -14,7 +14,7 @@ import { Card } from '../../components/Card';
 import { Field } from '../../components/Field';
 import { Screen } from '../../components/Screen';
 import { Text } from '../../components/Text';
-import { apiGet, apiPost, ApiError } from '../../lib/api';
+import { apiGet, apiPost, apiDelete, ApiError } from '../../lib/api';
 import type { Cart, IntentSuggestion } from '../../lib/types';
 import { occasionLabel, thb } from '../../lib/format';
 import { colors, radii, space } from '../../theme';
@@ -23,6 +23,7 @@ const OCCASIONS = ['anniversary', 'apology', 'celebration', 'sympathy', 'birthda
 
 export default function IntentMode() {
   const router = useRouter();
+  const { edit_item_id } = useLocalSearchParams<{ edit_item_id?: string }>();
   const [occasion, setOccasion] = useState<string>('anniversary');
   const [recipient, setRecipient] = useState('');
   const [message, setMessage] = useState('');
@@ -50,6 +51,9 @@ export default function IntentMode() {
     setError(null);
     setAdding(true);
     try {
+      if (edit_item_id) {
+        await apiDelete(`/cart/items/${edit_item_id}`);
+      }
       await apiPost<Cart>('/cart/items', {
         item_type: 'intent',
         curated_bouquet_id: suggestion.suggested_bouquet.id,
@@ -67,8 +71,8 @@ export default function IntentMode() {
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow="INTENT MODE" title="Tell us the moment" back />
+    <Screen background="cream" maxFrame="tablet" back>
+      <AppHeader eyebrow="INTENT MODE" title="Tell us the moment" />
 
       <Text variant="bodySm" color="muted" style={styles.intro}>
         Pick the occasion. Add a name and a message. We'll suggest a bouquet that says it well.
@@ -173,7 +177,7 @@ export default function IntentMode() {
 
           <View style={{ height: space.md }} />
           <Button
-            label={adding ? 'Adding to cart…' : `Add to cart · ${thb(suggestion.suggested_bouquet.base_price_thb)}`}
+            label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm changes' : `Add to cart · ${thb(suggestion.suggested_bouquet.base_price_thb)}`)}
             onPress={addToCart}
             loading={adding}
             full

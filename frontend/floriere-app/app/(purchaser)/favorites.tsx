@@ -54,8 +54,8 @@ export default function Favorites() {
   const cardWidth = bp === 'phone' ? '48%' : '31%';
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow="FAVORITES" title="Saved bouquets" back />
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/home">
+      <AppHeader eyebrow="FAVORITES" title="Saved bouquets" />
 
       {list === null ? (
         <ActivityIndicator color={colors.champagne} />

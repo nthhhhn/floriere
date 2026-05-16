@@ -11,7 +11,7 @@ import { PlaceholderImage } from '../../components/PlaceholderImage';
 import { ProductCard } from '../../components/ProductCard';
 import { Screen } from '../../components/Screen';
 import { Text } from '../../components/Text';
-import { apiGet } from '../../lib/api';
+import { apiGet, apiPost } from '../../lib/api';
 import { useBreakpoint } from '../../lib/responsive';
 import type { Cart, CuratedBouquet, MerchantPublic } from '../../lib/types';
 import { stars, occasionLabel } from '../../lib/format';
@@ -46,6 +46,17 @@ export default function PurchaserHome() {
       } catch { /* ignore — empty states render */ }
     })();
   }, []);
+
+  async function addToCart(id: number) {
+    try {
+      await apiPost<Cart>('/cart/items', {
+        item_type: 'curated',
+        curated_bouquet_id: id,
+        quantity: 1,
+      });
+      router.push('/(purchaser)/cart' as any);
+    } catch { /* ignore */ }
+  }
 
   const featured = curated.slice(0, 4);
   const trending = curated.slice(0, 6);
@@ -165,6 +176,11 @@ export default function PurchaserHome() {
                 occasion={occasionLabel(b.occasion)}
                 ratingLabel={b.review_count ? `★ ${(b.avg_stars ?? 0).toFixed(1)}` : null}
                 onPress={() => router.push(`/(purchaser)/curated/${b.id}` as any)}
+                rightAccessory={
+                  <Pressable onPress={() => addToCart(b.id)} style={styles.addCartBtn} hitSlop={8}>
+                    <Text variant="caption" color="white" style={styles.addCartText}>+ CART</Text>
+                  </Pressable>
+                }
               />
             </View>
           ))}
@@ -189,6 +205,11 @@ export default function PurchaserHome() {
                 ratingLabel={b.review_count ? `★ ${(b.avg_stars ?? 0).toFixed(1)}` : null}
                 occasion={occasionLabel(b.occasion)}
                 onPress={() => router.push(`/(purchaser)/curated/${b.id}` as any)}
+                rightAccessory={
+                  <Pressable onPress={() => addToCart(b.id)} style={styles.addCartBtn} hitSlop={8}>
+                    <Text variant="caption" color="white" style={styles.addCartText}>+ CART</Text>
+                  </Pressable>
+                }
               />
             </View>
           ))}
@@ -281,4 +302,15 @@ const styles = StyleSheet.create({
   gridWide: { rowGap: space.lg },
   hStrip: { gap: space.md, paddingRight: space.md },
   hItem:  { width: 200 },
+  addCartBtn: {
+    backgroundColor: colors.champagne,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radii.xs,
+  },
+  addCartText: {
+    fontWeight: '700',
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
 });

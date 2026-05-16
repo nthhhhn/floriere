@@ -64,8 +64,8 @@ export default function AdminVouchers() {
   }
 
   return (
-    <Screen background="cream" maxFrame="desktop">
-      <AppHeader eyebrow="ADMIN" title="Voucher codes" back />
+    <Screen background="cream" maxFrame="desktop" back>
+      <AppHeader eyebrow="ADMIN" title="Voucher codes" />
 
       <Card tone="creamSoft" style={{ width: '100%', marginBottom: space.xl }}>
         <Text variant="eyebrow" color="champagne">NEW VOUCHER</Text>

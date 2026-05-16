@@ -13,7 +13,7 @@
 // 429 on free tier) then falls back to Pollinations.ai (free) and finally a
 // tag-similarity stub. The frontend renders preview_url regardless of source.
 
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -28,7 +28,7 @@ import { Button } from '../../components/Button';
 import { PlaceholderImage, toneFromColor } from '../../components/PlaceholderImage';
 import { Screen } from '../../components/Screen';
 import { Text } from '../../components/Text';
-import { apiGet, apiPost, ApiError } from '../../lib/api';
+import { apiGet, apiPost, apiDelete, ApiError } from '../../lib/api';
 import {
   FORMATS,
   MOOD_REFS,
@@ -80,6 +80,7 @@ const NOTE_HINTS = [
 
 export default function Concierge() {
   const router = useRouter();
+  const { edit_item_id } = useLocalSearchParams<{ edit_item_id?: string }>();
   const bp = useBreakpoint();
   const isPhone = bp === 'phone';
 
@@ -134,6 +135,11 @@ export default function Concierge() {
   }
 
   function next() {
+    if (editingFromSummary) {
+      setStep(7);
+      setEditingFromSummary(false);
+      return;
+    }
     if (step === 5) {
       // Last input step → fire generate then go to preview.
       generate();
@@ -141,9 +147,23 @@ export default function Concierge() {
     }
     setStep((s) => Math.min(6, (s + 1) as Step));
   }
+    setStep((s) => Math.min(6, (s + 1) as Step));
+  }
 
   function back() {
-    setStep((s) => Math.max(0, (s - 1) as Step));
+    if (editingFromSummary) {
+      setStep(7);
+      setEditingFromSummary(false);
+      return;
+    }
+    if (step === 0 || step === 7) {
+      router.back();
+    } else {
+      setStep((s) => Math.max(0, (s - 1) as Step));
+    }
+  } else {
+      setStep((s) => Math.max(0, (s - 1) as Step));
+    }
   }
 
   function toggleMood(id: string) {
@@ -222,6 +242,9 @@ export default function Concierge() {
         preview_source: result.preview_source,
       };
 
+      if (edit_item_id) {
+        await apiDelete(`/cart/items/${edit_item_id}`);
+      }
       await apiPost<Cart>('/cart/items', {
         item_type:       'concierge',
         custom_label:    `Concierge · ${occasionLabel} · ${result.label}`,
@@ -260,19 +283,9 @@ export default function Concierge() {
   const messageOver = fmt.maxChars > 0 && message.length > fmt.maxChars;
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      {/* Header strip — Back arrow on top-left, Start over on top-right */}
-      <View style={styles.headerNav}>
-        <Pressable
-          onPress={back}
-          disabled={step === 0 || step === 6}
-          style={(step === 0 || step === 6) ? [styles.backBtn, styles.backBtnDisabled] : styles.backBtn}
-          accessibilityLabel="Back"
-        >
-          <Text variant="body" color={(step === 0 || step === 6) ? 'muted' : 'ink'} style={{ fontWeight: '600' }}>
-            ← Back
-          </Text>
-        </Pressable>
+    <Screen background="cream" maxFrame="tablet" back={back}>
+      {/* Header strip — Start over on top-right */}
+      <View style={[styles.headerNav, { justifyContent: 'flex-end' }]}>
         {step > 0 && step < 6 ? (
           <Pressable onPress={reset} style={styles.clearChip}>
             <Text variant="caption" color="muted" style={{ fontWeight: '600' }}>Start over</Text>
@@ -334,11 +347,16 @@ export default function Concierge() {
             {OCCASIONS.map((o) => {
               const active = o === occasion;
               return (
-                <Pressable
-                  key={o}
-                  onPress={() => setOccasion(o)}
-                  style={active ? [styles.occChip, styles.occChipActive] : styles.occChip}
-                >
+                  <Pressable
+                    key={o}
+                    onPress={() => {
+                      setOccasion(o);
+                      if (o !== 'other') {
+                        setTimeout(next, 150);
+                      }
+                    }}
+                    style={active ? [styles.occChip, styles.occChipActive] : styles.occChip}
+                  >
                   <Text
                     variant="body"
                     color={active ? 'champagne' : 'ink'}
@@ -362,6 +380,8 @@ export default function Concierge() {
                 placeholderTextColor={colors.muted}
                 maxLength={60}
                 autoFocus
+                returnKeyType="done"
+                onSubmitEditing={() => { if (canAdvance(0)) next(); }}
               />
             </View>
           ) : null}
@@ -805,7 +825,7 @@ export default function Concierge() {
 
               <View style={{ height: space.md }} />
               <Button
-                label={adding ? 'Adding to cart…' : `Add to cart · ${thb(result.price_thb)}`}
+                label={adding ? (edit_item_id ? 'Updating…' : 'Adding to cart…') : (edit_item_id ? 'Confirm changes' : `Add to cart · ${thb(result.price_thb)}`)}
                 onPress={addToCart}
                 loading={adding}
                 full
@@ -815,29 +835,106 @@ export default function Concierge() {
         </View>
       ) : null}
 
+            {step === 7 ? (
+        <View style={{ width: '100%' }}>
+          <Text variant="h3" color="ink" style={{ marginTop: space.xl, marginBottom: space.lg }}>Review your selections</Text>
+          <View style={{ backgroundColor: colors.white, borderRadius: radii.md, borderWidth: 1, borderColor: colors.borderHair, padding: space.lg }}>
+            {/* Occasion */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text variant="caption" color="muted">OCCASION</Text>
+                <Text variant="body" color="ink" style={{ marginTop: 2 }}>{occasion === 'other' ? otherOccasion : occasion ? OCCASION_LABEL[occasion] : 'None'}</Text>
+              </View>
+              <Button label="Edit" variant="ghost" size="sm" onPress={() => { setStep(0); setEditingFromSummary(true); }} />
+            </View>
+            <View style={{ height: 1, backgroundColor: colors.creamRule, marginVertical: space.md }} />
+
+            {/* Mood */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text variant="caption" color="muted">MOOD</Text>
+                <Text variant="body" color="ink" style={{ marginTop: 2 }}>{moodPicks.length > 0 ? moodPicks.join(', ') : 'None'}</Text>
+              </View>
+              <Button label="Edit" variant="ghost" size="sm" onPress={() => { setStep(1); setEditingFromSummary(true); }} />
+            </View>
+            <View style={{ height: 1, backgroundColor: colors.creamRule, marginVertical: space.md }} />
+
+            {/* Palette */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text variant="caption" color="muted">PALETTE</Text>
+                <Text variant="body" color="ink" style={{ marginTop: 2 }}>{palette ? palette : 'None'}</Text>
+              </View>
+              <Button label="Edit" variant="ghost" size="sm" onPress={() => { setStep(2); setEditingFromSummary(true); }} />
+            </View>
+            <View style={{ height: 1, backgroundColor: colors.creamRule, marginVertical: space.md }} />
+
+            {/* Flowers */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text variant="caption" color="muted">FLOWERS</Text>
+                <Text variant="body" color="ink" style={{ marginTop: 2 }}>{flowerKinds.length > 0 ? flowerKinds.join(', ') : 'No preference'}</Text>
+              </View>
+              <Button label="Edit" variant="ghost" size="sm" onPress={() => { setStep(3); setEditingFromSummary(true); }} />
+            </View>
+            <View style={{ height: 1, backgroundColor: colors.creamRule, marginVertical: space.md }} />
+
+            {/* Message */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text variant="caption" color="muted">MESSAGE & FORMAT</Text>
+                <Text variant="body" color="ink" style={{ marginTop: 2 }}>{message ? `"${message}"` : 'No message'}</Text>
+                <Text variant="caption" color="champagne" style={{ marginTop: 2 }}>{FORMATS.find(f => f.id === format)?.label}</Text>
+              </View>
+              <Button label="Edit" variant="ghost" size="sm" onPress={() => { setStep(4); setEditingFromSummary(true); }} />
+            </View>
+            <View style={{ height: 1, backgroundColor: colors.creamRule, marginVertical: space.md }} />
+
+            {/* Notes */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text variant="caption" color="muted">NOTES</Text>
+                <Text variant="body" color="ink" style={{ marginTop: 2 }}>{anythingElse ? anythingElse : 'None'}</Text>
+              </View>
+              <Button label="Edit" variant="ghost" size="sm" onPress={() => { setStep(5); setEditingFromSummary(true); }} />
+            </View>
+          </View>
+          
+          <View style={{ marginTop: space.xl, marginBottom: space.xxl }}>
+            <Button 
+              label="Preview & Save changes" 
+              onPress={generate}
+              loading={loading}
+              full
+            />
+          </View>
+        </View>
+      ) : null}
+
       {/* ─── Bottom nav (steps 0-5 only) ─────────────────────── */}
       {step < 6 ? (
         <View style={styles.navRow}>
           <Pressable
             onPress={back}
-            disabled={step === 0}
-            style={step === 0 ? [styles.navBtn, styles.navBtnDisabled] : styles.navBtn}
+            style={styles.navBtn}
           >
-            <Text variant="body" color={step === 0 ? 'muted' : 'ink'} style={{ fontWeight: '600' }}>
+            <Text variant="body" color="ink" style={{ fontWeight: '600' }}>
               ← Back
             </Text>
           </Pressable>
-          <Pressable
-            onPress={next}
-            disabled={!canAdvance(step) || messageOver}
-            style={(!canAdvance(step) || messageOver)
-              ? [styles.navBtnPrimary, styles.navBtnPrimaryDisabled]
-              : styles.navBtnPrimary}
-          >
-            <Text variant="body" color="cream" style={{ fontWeight: '700' }}>
-              {step === 5 ? 'Generate →' : 'Next →'}
-            </Text>
-          </Pressable>
+          {step === 0 && occasion !== 'other' ? null : (
+            <Pressable
+              onPress={next}
+              disabled={!canAdvance(step) || messageOver}
+              style={(!canAdvance(step) || messageOver)
+                ? [styles.navBtnPrimary, styles.navBtnPrimaryDisabled]
+                : styles.navBtnPrimary}
+            >
+              <Text variant="body" color="cream" style={{ fontWeight: '700' }}>
+                {editingFromSummary ? 'Confirm' : step === 5 ? 'Generate →' : 'Next →'}
+              </Text>
+            </Pressable>
+          )}
         </View>
       ) : null}
     </Screen>

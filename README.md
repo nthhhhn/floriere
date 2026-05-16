@@ -72,7 +72,7 @@ The seed creates three users so you can see every role end-to-end without regist
 |---|---|---|
 | Purchaser | `pete@floriere.test`     | `purchaser123` |
 | Seller    | `merchant@floriere.test` | `merchant123` |
-| Admin     | `admin@floriere.test`    | `admin123` |
+| Admin     | `@floriere.admintest`    | `admin123` |
 
 You can also register a new purchaser (or new seller — toggle "I'm signing up as a flower merchant" on the register screen). Admins are seed-only.
 

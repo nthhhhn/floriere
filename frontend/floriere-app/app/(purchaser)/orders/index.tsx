@@ -71,8 +71,8 @@ export default function OrdersIndex() {
   }
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow="YOUR ORDERS" title="Your purchases" back />
+    <Screen background="cream" maxFrame="tablet" back="/(purchaser)/account">
+      <AppHeader eyebrow="YOUR ORDERS" title="Your purchases" />
 
       <View style={styles.tabStrip}>
         {FILTERS.map((f) => {

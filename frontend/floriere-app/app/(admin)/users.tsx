@@ -48,8 +48,8 @@ export default function AdminUsers() {
   }
 
   return (
-    <Screen background="cream" maxFrame="desktop">
-      <AppHeader eyebrow="ADMIN" title="Users" back />
+    <Screen background="cream" maxFrame="desktop" back>
+      <AppHeader eyebrow="ADMIN" title="Users" />
 
       {error ? <Text variant="caption" color="danger" style={{ marginBottom: space.md }}>{error}</Text> : null}
 

@@ -60,8 +60,8 @@ export default function AdminOrders() {
   });
 
   return (
-    <Screen background="cream" maxFrame="desktop">
-      <AppHeader eyebrow="ADMIN" title="All orders" back />
+    <Screen background="cream" maxFrame="desktop" back>
+      <AppHeader eyebrow="ADMIN" title="All orders" />
 
       {error ? <Text variant="caption" color="danger" style={{ marginBottom: space.md }}>{error}</Text> : null}
 

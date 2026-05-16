@@ -128,6 +128,17 @@ export default function OrderDetail() {
     return () => clearInterval(h);
   }, [order?.status, id]);
 
+  useEffect(() => {
+    if (!id) return;
+    const h = setInterval(async () => {
+      try {
+        const msgs = await apiGet<OrderMessage[]>(`/orders/${id}/messages`);
+        setMessages(msgs);
+      } catch { /* ignore */ }
+    }, 5000);
+    return () => clearInterval(h);
+  }, [id]);
+
   async function cancelDirect() {
     if (!order) return;
     setError(null); setBusy(true);
@@ -199,8 +210,8 @@ export default function OrderDetail() {
 
   if (!order) {
     return (
-      <Screen background="cream" maxFrame="tablet">
-        <AppHeader eyebrow="ORDER" title="Loading" back />
+      <Screen background="cream" maxFrame="tablet" back>
+        <AppHeader eyebrow="ORDER" title="Loading" />
         <ActivityIndicator color={colors.champagne} />
       </Screen>
     );
@@ -226,8 +237,8 @@ export default function OrderDetail() {
     : Math.max(0, Math.min(1, currentStep / totalStages));
 
   return (
-    <Screen background="cream" maxFrame="tablet">
-      <AppHeader eyebrow={`ORDER #${order.id}`} title={`For ${order.recipient_name}`} back />
+    <Screen background="cream" maxFrame="tablet" back>
+      <AppHeader eyebrow={`ORDER #${order.id}`} title={`For ${order.recipient_name}`} />
 
       {/* 1 · Status hero — single source of truth. Replaces old hero + 5-dot tracker. */}
       <View style={[

@@ -22,6 +22,10 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from werkzeug.security import generate_password_hash  # noqa: E402
+from dotenv import load_dotenv
+
+# Load .env so we pick up DB credentials
+load_dotenv(ROOT / ".env")
 
 from db import get_connection  # noqa: E402
 
