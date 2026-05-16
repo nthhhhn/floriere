@@ -45,7 +45,7 @@ import type { Cart, Flower } from '../../lib/types';
 import { thb } from '../../lib/format';
 import { colors, radii, space } from '../../theme';
 
-type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 type ConciergeResult = {
   preview_url: string;
@@ -102,6 +102,27 @@ export default function Concierge() {
   const [previewBroken, setPreviewBroken] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [editingFromSummary, setEditingFromSummary] = useState(false);
+
+  useEffect(() => {
+    if (edit_item_id) {
+      apiGet<{items: any[]}>('/cart').then((res) => {
+        const item = res.items.find((i) => i.id === Number(edit_item_id));
+        if (item && item.concierge_brief) {
+          const b = item.concierge_brief;
+          setOccasion(b.occasion || null);
+          setOtherOccasion(b.occasion_text || '');
+          setMoodPicks(b.mood_picks || []);
+          setPalette(b.palette_id || null);
+          setFlowerKinds(b.flower_kinds || []);
+          setMessage(b.message || '');
+          setFormat(b.format || 'card');
+          setAnythingElse(b.anything_else || '');
+          setStep(7);
+        }
+      }).catch(console.error);
+    }
+  }, [edit_item_id]);
 
   useEffect(() => {
     apiGet<Flower[]>('/catalog/flowers', { auth: false })
@@ -145,9 +166,7 @@ export default function Concierge() {
       generate();
       return;
     }
-    setStep((s) => Math.min(6, (s + 1) as Step));
-  }
-    setStep((s) => Math.min(6, (s + 1) as Step));
+    setStep((s) => Math.min(6, s + 1) as Step);
   }
 
   function back() {
@@ -159,10 +178,7 @@ export default function Concierge() {
     if (step === 0 || step === 7) {
       router.back();
     } else {
-      setStep((s) => Math.max(0, (s - 1) as Step));
-    }
-  } else {
-      setStep((s) => Math.max(0, (s - 1) as Step));
+      setStep((s) => Math.max(0, s - 1) as Step);
     }
   }
 
@@ -283,7 +299,7 @@ export default function Concierge() {
   const messageOver = fmt.maxChars > 0 && message.length > fmt.maxChars;
 
   return (
-    <Screen background="cream" maxFrame="tablet" back={back}>
+    <Screen background="cream" maxFrame="tablet">
       {/* Header strip — Start over on top-right */}
       <View style={[styles.headerNav, { justifyContent: 'flex-end' }]}>
         {step > 0 && step < 6 ? (
@@ -309,11 +325,18 @@ export default function Concierge() {
 
       {/* Step indicator */}
       <View style={styles.stepBar}>
-        {STEP_LABELS.map((label, i) => {
+        {STEP_LABELS.slice(0, 7).map((label, i) => {
           const done = i < step;
           const active = i === step;
           return (
-            <View key={label} style={styles.stepSegment}>
+            <Pressable key={label} style={styles.stepSegment} onPress={() => {
+              if (i === step) return;
+              if (i === 6) {
+                if (occasion) generate();
+              } else {
+                setStep(i as Step);
+              }
+            }}>
               <View style={[
                 styles.stepDot,
                 done && styles.stepDotDone,
@@ -328,10 +351,10 @@ export default function Concierge() {
                   {label}
                 </Text>
               ) : null}
-              {i < STEP_LABELS.length - 1 ? (
+              {i < 6 ? (
                 <View style={[styles.stepLine, done && styles.stepLineDone]} />
               ) : null}
-            </View>
+            </Pressable>
           );
         })}
       </View>
@@ -911,8 +934,8 @@ export default function Concierge() {
         </View>
       ) : null}
 
-      {/* ─── Bottom nav (steps 0-5 only) ─────────────────────── */}
-      {step < 6 ? (
+      {/* ─── Bottom nav (steps 0-6 only) ─────────────────────── */}
+      {step < 7 ? (
         <View style={styles.navRow}>
           <Pressable
             onPress={back}
@@ -922,7 +945,7 @@ export default function Concierge() {
               ← Back
             </Text>
           </Pressable>
-          {step === 0 && occasion !== 'other' ? null : (
+          {step === 0 && occasion !== 'other' ? null : step === 6 ? null : (
             <Pressable
               onPress={next}
               disabled={!canAdvance(step) || messageOver}

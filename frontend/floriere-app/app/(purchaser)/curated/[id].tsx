@@ -95,7 +95,7 @@ export default function CuratedDetail() {
 
   if (loading) {
     return (
-      <Screen background="cream" maxFrame="tablet" back>
+      <Screen background="cream" maxFrame="tablet">
         <AppHeader eyebrow="CURATED" title="Loading" />
         <ActivityIndicator color={colors.champagne} />
       </Screen>
@@ -104,7 +104,7 @@ export default function CuratedDetail() {
 
   if (!bouquet) {
     return (
-      <Screen background="cream" maxFrame="tablet" back>
+      <Screen background="cream" maxFrame="tablet">
         <AppHeader eyebrow="CURATED" title="Not found" />
         <View className="w-full items-center py-huge">
           <Text className="font-serif text-h2 text-ink text-center">This bouquet isn't available</Text>
@@ -121,11 +121,10 @@ export default function CuratedDetail() {
   const wideLead = bp !== 'phone';
 
   return (
-    <Screen background="cream" maxFrame="tablet" back>
+    <Screen background="cream" maxFrame="tablet">
       <AppHeader
         eyebrow={occasionLabel(bouquet.occasion).toUpperCase()}
         title={bouquet.name}
-        back
         rightSlot={
           <Pressable onPress={toggleFavorite}>
             <Pill label={favorite ? '♥ SAVED' : 'SAVE'} tone={favorite ? 'champagne' : 'muted'} />

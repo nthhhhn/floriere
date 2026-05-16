@@ -145,7 +145,7 @@ export default function SellerOrderDetail() {
 
   if (!order) {
     return (
-      <Screen background="cream" maxFrame="tablet" back>
+      <Screen background="cream" maxFrame="tablet" back="/(seller)/home" backLabel="Back">
         <AppHeader eyebrow="ORDER" title="Loading" />
         <ActivityIndicator color={colors.champagne} />
       </Screen>
@@ -159,7 +159,7 @@ export default function SellerOrderDetail() {
   const isReviewing = brief && (order.status === 'pending_review' || order.status === 'awaiting_customer');
 
   return (
-    <Screen background="cream" maxFrame="tablet" back>
+    <Screen background="cream" maxFrame="tablet" back="/(seller)/home" backLabel="Back">
       <AppHeader eyebrow={`ORDER #${order.id}`} title={`For ${order.recipient_name}`} />
 
       <View style={{ width: '100%' }}>

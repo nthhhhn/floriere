@@ -30,6 +30,7 @@ type Props = {
   /** Disable the mount fade-in. Default: enabled. */
   noAnimation?: boolean;
   back?: boolean | string | (() => void);
+  backLabel?: string;
 };
 
 const GRADIENT_BACKGROUNDS: Background[] = ['page-gradient', 'hero-gradient', 'dark-gradient'];
@@ -50,6 +51,7 @@ export function Screen({
   contentStyle,
   noAnimation = false,
   back,
+  backLabel,
 }: Props) {
   const router = useRouter();
   const bp = useBreakpoint();
@@ -87,7 +89,7 @@ export function Screen({
       {back ? (
         <View style={{ marginTop: space.xl, width: '100%' }}>
           <Button 
-            label="Remove" 
+            label={backLabel || "Remove"} 
             variant="secondary"
             onPress={() => typeof back === 'function' ? back() : typeof back === 'string' ? router.push(back as any) : router.back()}
             full 
