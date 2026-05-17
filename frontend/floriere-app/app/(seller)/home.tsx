@@ -31,11 +31,11 @@ export default function SellerHome() {
   const router = useRouter();
   const bp = useBreakpoint();
   const [merchant, setMerchant] = useState<Merchant | null>(null);
-  const [orders, setOrders]     = useState<Order[] | null>(null);
+  const [orders, setOrders] = useState<Order[] | null>(null);
   const [lowStock, setLowStock] = useState<Flower[]>([]);
-  const [ratings, setRatings]   = useState<SellerRating[]>([]);
-  const [tips, setTips]         = useState<SellerTipStats | null>(null);
-  const [busy, setBusy]         = useState(false);
+  const [ratings, setRatings] = useState<SellerRating[]>([]);
+  const [tips, setTips] = useState<SellerTipStats | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -121,7 +121,7 @@ export default function SellerHome() {
       <View style={[styles.kpis, bp !== 'phone' && styles.kpisWide]}>
         {(['pending', 'accepted', 'preparing', 'out_for_delivery', 'delivered'] as const).map((s) => (
           <Card key={s} tone="white" style={[styles.kpi, bp !== 'phone' && styles.kpiWide]}>
-            <Text variant="eyebrow" color="champagne">{s.replace(/_/g, ' ').toUpperCase()}</Text>
+            <Text variant="eyebrow" color="champagne" style={{ flexShrink: 1 }}>{s.replace(/_/g, ' ').toUpperCase()}</Text>
             <Text variant="h1" color="ink" style={{ marginTop: 4 }}>{counts[s] ?? 0}</Text>
           </Card>
         ))}
@@ -187,12 +187,13 @@ export default function SellerHome() {
               <View style={styles.orderBody}>
                 <View style={styles.orderHead}>
                   <Text variant="caption" color="muted" style={{ letterSpacing: 1 }}>ORDER #{o.id}</Text>
-                  <StatusBadge status={o.status} />
+                  <View style={{ flexShrink: 1 }}>
+                    <StatusBadge status={o.status} />
+                  </View>
                 </View>
-                <Text variant="body" color="ink" style={{ fontWeight: '600', marginTop: 2 }} numberOfLines={1}>
-                  For {o.recipient_name}
-                </Text>
-                <Text variant="caption" color="muted" numberOfLines={1}>
+                <Text variant="body" color="ink" style={{ fontWeight: '600', marginTop: 2, flexShrink: 1 }} numberOfLines={2}>
+                  For {o.recipient_name}</Text>
+                <Text variant="caption" color="muted" numberOfLines={2}>
                   From {o.purchaser_name ?? '—'} · {prettyDate(o.delivery_date)}
                   {o.delivery_window ? ` · ${o.delivery_window}` : ''}
                 </Text>
@@ -231,12 +232,12 @@ export default function SellerHome() {
 }
 
 const styles = StyleSheet.create({
-  shopRow:  { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  kpis:     { width: '100%', gap: space.sm },
-  kpisWide: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, justifyContent: 'space-between' },
-  kpi:      { width: '100%', paddingVertical: space.md },
-  kpiWide:  { width: '18%' },
-  row:      { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  shopRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  kpis: { width: '100%', gap: space.sm },
+  kpisWide: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  kpi: { width: '100%', paddingVertical: space.md },
+  kpiWide: { flex: 1, minWidth: 130 },
+  row: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   orderRow: {
     width: '100%',
     flexDirection: 'row',
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     marginBottom: space.md,
   },
   orderThumb: {
-    width: 80, height: 80,
+    width: 64, height: 64,
     borderRadius: radii.sm,
     backgroundColor: colors.creamSoft,
   },
@@ -257,7 +258,9 @@ const styles = StyleSheet.create({
   orderHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: space.sm,
+    flexWrap: 'wrap',
   },
   orderFoot: {
     flexDirection: 'row',

@@ -104,8 +104,8 @@ export default function AdminHome() {
             </Card>
             <Card tone="white" style={[styles.kpi, bp !== 'phone' && styles.kpiWide]}>
               <Text variant="eyebrow" color="champagne">AVG RATING</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: 4 }}>
-                <Stars value={Math.round(m.avg_rating)} size={20} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: 4, flexWrap: 'wrap' }}>
+                <Stars value={Math.round(m.avg_rating)} size={16} />
                 <Text variant="h2" color="ink">{m.avg_rating.toFixed(1)}</Text>
               </View>
               <Text variant="caption" color="muted" style={{ marginTop: 4 }}>
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   kpis:     { width: '100%', gap: space.md },
   kpisWide: { flexDirection: 'row', gap: space.md, flexWrap: 'wrap' },
   kpi:      { width: '100%' },
-  kpiWide:  { flex: 1, minWidth: 200 },
+  kpiWide:  { flex: 1, minWidth: 160 },
   pipeline: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, width: '100%' },
   pipeCard: { minWidth: 140, flexGrow: 1, paddingVertical: space.md },
 });
