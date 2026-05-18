@@ -146,7 +146,7 @@ export default function SellerCatalog() {
           <Card key={f.id} tone="white" style={{ width: '100%', marginBottom: space.sm, opacity: f.active ? 1 : 0.5 }}>
             <View style={styles.flowerRow}>
               <View style={styles.flowerImg}>
-                <PlaceholderImage label={f.name} subLabel={f.color} tone={toneFromColor(f.color)} size="sm" fill />
+                <PlaceholderImage label={f.illustration} subLabel={f.color} tone={toneFromColor(f.color)} size="sm" fill />
               </View>
               <View style={{ flex: 1, marginLeft: space.md }}>
                 <Text variant="h3" color="ink">{f.name} · {f.color}</Text>
@@ -160,7 +160,7 @@ export default function SellerCatalog() {
                 {f.active ? (
                   <Pressable onPress={() => toggleActive(f.id, false)}><Text variant="caption" color="danger">Disable</Text></Pressable>
                 ) : (
-                  <Pressable onPress={() => toggleActive(f.id, true)}><Text variant="caption" color="success">Enable</Text></Pressable>
+                  <Pressable onPress={() => toggleActive(f.id, true)}><Text variant="caption" color = "success">Enable</Text></Pressable>
                 )}
               </View>
             </View>

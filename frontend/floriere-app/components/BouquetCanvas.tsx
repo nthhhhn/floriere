@@ -106,7 +106,7 @@ export function BouquetCanvas({ stems, height = 320, emptyLabel = 'Pick stems be
         {blooms.map((b) => (
           <Image
             key={b.key}
-            source={{ uri: b.img }}
+            source={b.img}
             style={{
               position: 'absolute',
               width: b.size, height: b.size,

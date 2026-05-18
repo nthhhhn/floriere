@@ -1,25 +1,33 @@
-// Placeholder tile — uniform neutral grey with a "TODO: PHOTO" marker.
+// Dynamic flower and bouquet image loader using local assets.
 //
-// Pete's friend will source Pak Khlong Talat market photos and swap these out.
-// Until then, every image slot renders as the same flat grey card so the
-// missing-photo regions are obvious in screenshots and easy to find.
+// Automatically falls back to the stable catalog or generic bouquet image if
+// specific illustration kind/color pairs are not found.
 //
-// Props are kept for API compatibility with the previous tinted version but
-// `label`, `subLabel`, and `tone` are intentionally ignored — the visual is
-// the same everywhere.
+// Props are preserved for full API compatibility across the codebase.
 
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Image } from 'expo-image';
 
 import { radii } from '../theme';
-import { Text } from './Text';
+import { flowerImage } from '../lib/flowerImages';
 
-type Tone =
+export type Tone =
   | 'blush' | 'rose' | 'red' | 'pink' | 'yellow' | 'orange'
   | 'white' | 'cream' | 'green' | 'sage' | 'blue' | 'purple'
   | 'lilac' | 'earth' | 'warm' | 'cool' | 'neutral';
 
-// Kept exported so existing call sites keep type-checking.
-export function toneFromColor(_color?: string | null): Tone {
+// Returns a valid Tone hint from standard color strings to aid in photo lookup.
+export function toneFromColor(color?: string | null): Tone {
+  if (!color) return 'neutral';
+  const c = color.toLowerCase();
+  if (c.includes('red')) return 'red';
+  if (c.includes('pink') || c.includes('blush')) return 'pink';
+  if (c.includes('yellow')) return 'yellow';
+  if (c.includes('orange')) return 'orange';
+  if (c.includes('white')) return 'white';
+  if (c.includes('green') || c.includes('sage')) return 'green';
+  if (c.includes('blue')) return 'blue';
+  if (c.includes('purple') || c.includes('lilac')) return 'purple';
   return 'neutral';
 }
 
@@ -32,26 +40,18 @@ type Props = {
   fill?: boolean;
 };
 
-const PLACEHOLDER_BG = '#D9D9D9';
-const PLACEHOLDER_FG = '#6B6B6B';
-
-export function PlaceholderImage({ size = 'md', style, fill }: Props) {
-  const fontSize = size === 'sm' ? 9 : size === 'lg' ? 12 : 10;
+export function PlaceholderImage({ label, subLabel, tone, style, fill }: Props) {
+  // Use subLabel (which has the color name e.g. "red" or "pink") or tone as color hints.
+  const colorStr = subLabel || tone || '';
+  const imageSource = flowerImage(label || undefined, colorStr || undefined);
 
   return (
-    <View style={[fill ? styles.fill : styles.base, { backgroundColor: PLACEHOLDER_BG }, style]}>
-      <Text
-        style={{
-          color: PLACEHOLDER_FG,
-          fontFamily: 'monospace',
-          fontSize,
-          letterSpacing: 1.5,
-          fontWeight: '600',
-        }}
-      >
-        TODO: PHOTO
-      </Text>
-    </View>
+    <Image
+      source={imageSource}
+      style={[fill ? styles.fill : styles.base, style]}
+      contentFit="cover"
+      transition={150}
+    />
   );
 }
 
@@ -60,15 +60,11 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     borderRadius: radii.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
     overflow: 'hidden',
   },
   fill: {
     width: '100%',
     height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
     overflow: 'hidden',
   },
 });
